@@ -1,0 +1,226 @@
+crud operation in django:
+create,retrieve,update,delete   Database: Django inbuild sqlite admin/mysql 
+
+1)open pychyam and create project
+2)install django :pip install django
+3)create project:django-admin startproject projectname
+4)cd projectname
+5)create app:python manage.py startapp appname
+6)create templates folder in app
+  create 3 files:
+  1)display.html   #edit display delete display create display
+  2)edit.html      #update
+  3)showform.html  
+______________________________________________________________________________________________________
+7)install app in setting.py
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+
+________________________________________________________________________________________________________
+  
+#DISPLAY.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table border="1">
+    <tr>
+        <th> ID</th>
+        <th> EID</th>
+        <th> NAME</th>
+        <th> EMAILID</th>
+        <th> CONTACT</th>
+        <th> ACTION</th>
+    </tr>
+    {% for i in res %}
+    <tr>
+        <td>{{i.id}}</td>
+        <td>{{i.eid}}</td>
+        <td>{{i.ename}}</td>
+        <td>{{i.eemail}}</td>
+        <td>{{i.econtact}}</td>
+        <td> <a href="/edit/{{i.id}}">edit</a>
+        <a href="/delete/{{i.id}}"> delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<form action="saveform">
+    <button type="submit">home</button>
+</form>
+</body>
+</html>
+
+
+___________________________________________________________________________________________________________________________________________
+edit.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/update/{{res.id}}" method="post">
+{% csrf_token %}
+<p><label for="id_eid">Eid:</label> <input type="text" name="eid" maxlength="20" required id="id_eid" value="{{res.eid}}"></p>
+<p><label for="id_ename">Ename:</label> <input type="text" name="ename" maxlength="50" required id="id_ename" value="{{res.ename}}"></p>
+<p><label for="id_eemail">Eemail:</label> <input type="email" name="eemail" maxlength="254" required id="id_eemail" value="{{res.eemail}}"></p>
+<p><label for="id_econtact">Econtact:</label> <input type="text" name="econtact" maxlength="50" required id="id_econtact" value="{{res.econtact}}"></p>
+<button type="submit">update</button>
+</form>
+</body>
+</html>
+
+___________________________________________________________________________________________________________________________________________
+showform.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="saveform" method="post">
+    {% csrf_token %}
+{{form.as_p}}
+<button type="submit">save</button>
+</form>
+
+<form action="display">
+    <button type="submit">show</button>
+</form>
+</body>
+</html>
+
+______________________________________________________________
+models.py
+
+from django.db import models   #storing data
+
+# Create your models here.
+class Employee_model(models.Model):
+    eid=models.CharField(max_length=20)
+    ename=models.CharField(max_length=50)
+    eemail=models.EmailField()
+    econtact=models.CharField(max_length=50)
+
+_________________________________________________________
+forms.py   app-->file-->forms.py
+
+
+from django import forms
+from .models import Employee_model
+class Employee_form(forms.ModelForm):
+    class Meta:
+        model=Employee_model
+        fields="__all__"   
+
+__________________________________________________________________________
+RUN COMMAND:
+  1)python manage.py makemigrations
+  2)python manage.py migrate
+_________________________________________________________________________
+
+CREATESUPERUSER FOR ADMIN USING SQLITE DATABASE:
+
+python manage.py createsuperuser 
+  set user
+  set password
+
+
+again: makemigrations and migrate your models.
+___________________________________________________________________________
+
+register your model in admin.py
+
+from django.contrib import admin
+from .models import Employee_model
+# Register your models here.
+
+admin.site.register(Employee_model)
+
+___________________________________________________________________________
+
+GO TO 127.0.0.1:8000/admin
+   user and password
+search create or not your models here
+
+__________________________________________________________________________
+
+views.py
+
+from django.shortcuts import render,redirect
+from .forms import Employee_form
+from .models import Employee_model
+# Create your views here.
+
+def savedemo(request):
+    if request.method=="POST":
+        data=Employee_form(request.POST)
+        if data.is_valid():
+            data.save()
+            return redirect("/")
+    else:
+        fm = Employee_form()
+        return render(request,'showform.html',{'form':fm})
+
+def displaydata(request):
+    data=Employee_model.objects.all()
+    return render(request,'display.html',{'res':data})
+
+
+def edit(request,id):
+    data=Employee_model.objects.get(id=id)
+    return render(request,'edit.html',{"res":data})
+
+def updatedata(request,id):
+    emp = Employee_model.objects.get(id=id)
+    data=Employee_form(request.POST,instance=emp)
+    if data.is_valid():
+        data.save()
+        return redirect("/display")
+
+
+def deletedata(request,id):
+    data = Employee_model.objects.get(id=id)
+    data.delete()
+    return redirect("/display")
+
+_______________________________________________________________________________________________________________________________________________
+app urls
+
+from . import views
+from django.urls import path
+#app url
+urlpatterns = [
+    path('',views.savedemo),
+    path('saveform',views.savedemo),
+    path('display',views.displaydata),
+    path('edit/<int:id>',views.edit),
+    path('update/<int:id>',views.updatedata),
+    path('delete/<int:id>',views.deletedata)
+]
+
+________________________________________________________________________________________________
+
+project urls
+
+from django.contrib import admin
+from django.urls import path,include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('',include('proj5_app.urls'))
+]
+____________________________________________________________________________________________
+

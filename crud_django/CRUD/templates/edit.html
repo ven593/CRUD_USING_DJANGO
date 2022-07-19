@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/update/{{res.id}}" method="post">
+{% csrf_token %}
+<p><label for="id_eid">Eid:</label> <input type="text" name="eid" maxlength="20" required id="id_eid" value="{{res.eid}}"></p>
+<p><label for="id_ename">Ename:</label> <input type="text" name="ename" maxlength="50" required id="id_ename" value="{{res.ename}}"></p>
+<p><label for="id_eemail">Eemail:</label> <input type="email" name="eemail" maxlength="254" required id="id_eemail" value="{{res.eemail}}"></p>
+<p><label for="id_econtact">Econtact:</label> <input type="text" name="econtact" maxlength="50" required id="id_econtact" value="{{res.econtact}}"></p>
+<button type="submit">update</button>
+</form>
+</body>
+</html>
